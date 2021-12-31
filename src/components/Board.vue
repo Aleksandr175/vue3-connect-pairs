@@ -1,10 +1,11 @@
 <template>
   <div>Уровень: {{ lvl }}</div>
-  <div class="board">
+  <div class="win" v-if="gameStatus === 1">Вы выиграли! Поздравляем!</div>
+  <div class="board" :style="{ width: 50 * size + 'px', height: 50 * size + 'px'}">
     <BoardItem
       v-for="(cell, index) in cells"
       :key="cell + '-' + index"
-      :icon="cell"
+      :icon-id="cell"
       @mousedown="mousedown(index)"
       @mouseup="mouseup(index)"
       @mousemove="go(index)"
@@ -32,7 +33,9 @@ export default {
     const path = ref([]);
     const size = ref(4);
     const closedPath = ref([]);
-    const lvl = 1;
+    let lvl = ref(1);
+    const maxLvl = 2;
+    let gameStatus = ref(0); // 0 - play, 1 - win
     
     const mousedown = (index) => {
       path.value = [];
@@ -45,21 +48,22 @@ export default {
     const start = (lvl) => {
       if (lvl === 1) {
         cells.value = [3, 1, 0, 1, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 3];
+        size.value = 4;
       }
       
       if (lvl === 2) {
-        cells.value = [3, 1, 1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 3];
+        cells.value = [0, 2, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 0];
+        size.value = 5;
       }
   
-      size.value = 4;
       path.value = [];
       closedPath.value = [];
     }
     
-    start();
+    start(lvl.value);
     
     const reload = () => {
-      start(lvl);
+      start(lvl.value);
     }
     
     const mouseup = (index) => {
@@ -82,8 +86,20 @@ export default {
       })
       
       if (completed) {
-        alert('Вы выиграли!');
+        goToNextLvl();
       }
+    }
+    
+    const goToNextLvl = () => {
+      lvl.value += 1;
+      gameStatus.value = 0;
+      
+      if (lvl.value > maxLvl) {
+        lvl.value = 1;
+        gameStatus.value = 1;
+      }
+      
+      start(lvl.value);
     }
     
     const go = (index) => {
@@ -119,6 +135,8 @@ export default {
       isRoadClosed,
       lvl,
       reload,
+      size,
+      gameStatus
     }
   }
 }
@@ -137,6 +155,10 @@ export default {
 .reload {
   text-decoration: underline;
   cursor: pointer;
+}
+
+.win {
+  font-weight: 700;
 }
 
 </style>
